@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  mysql:
+    build:
+      context: ./docker/mysql
+      args:
+        mysql_version: ${mysql_version}
+    container_name: ${COMPOSE_PROJECT_NAME}-mysql
+    
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    restart: always      
+    volumes:
+      - ./docker/mysql/sql/:/data/application/    
+    command: --init-file /data/application/db.sql   
+
+  php:
+    build:
+      context: ./docker/php
+      args:
+        php_version: ${php_version}
+    container_name: ${COMPOSE_PROJECT_NAME}-php
+    ports:
+      - "81:80"
+    volumes:
+      - ./:/opt/
+
+    command: /bin/bash -c "/opt/docker/php/script.sh"
+    links:
+      - mysql
